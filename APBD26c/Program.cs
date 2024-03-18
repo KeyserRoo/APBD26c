@@ -17,3 +17,4 @@ int GetAvg(int[] nums){
   int b = nums[1];
   return a;
 }
+
