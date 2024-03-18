@@ -12,3 +12,7 @@ int GetMax(int[] ints)
   }
   return max;
 }
+int GetAvg(int[] nums){
+  int a = nums[0];
+  return a;
+}
