@@ -1,13 +1,17 @@
-int GetMax(int[] ints) {
+int GetMax(int[] ints)
+{
     int max = 0;
-    foreach (int item in ints) {
+    foreach (int item in ints)
+    {
         if (max < item) max = item;
     }
     return max;
 }
-float GetAvg(int[] ints) {
+float GetAvg(int[] ints)
+{
     float toRet = 0;
-    foreach (int item in ints) {
+    foreach (int item in ints)
+    {
         toRet += item;
     }
     toRet /= ints.Length;

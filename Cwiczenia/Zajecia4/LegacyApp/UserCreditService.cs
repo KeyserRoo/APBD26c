@@ -18,7 +18,7 @@ namespace LegacyApp
                 {"Doe", 3000},
                 {"Kwiatkowski", 1000}
             };
-        
+
         public void Dispose()
         {
             //Simulating disposing of resources
