@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Zajecia5", "Zajecia5.csproj", "{C95B46EA-94B7-4515-BFF2-9444A4BAE77F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{1D5F3EF4-0635-44AE-8960-D0F39BB8603A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,10 @@ Global
 		{D2675574-02AF-45B2-BA3E-8D624F9EFAD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2675574-02AF-45B2-BA3E-8D624F9EFAD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2675574-02AF-45B2-BA3E-8D624F9EFAD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D5F3EF4-0635-44AE-8960-D0F39BB8603A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D5F3EF4-0635-44AE-8960-D0F39BB8603A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D5F3EF4-0635-44AE-8960-D0F39BB8603A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D5F3EF4-0635-44AE-8960-D0F39BB8603A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D2675574-02AF-45B2-BA3E-8D624F9EFAD3} = {C95B46EA-94B7-4515-BFF2-9444A4BAE77F}
