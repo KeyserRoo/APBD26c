@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Zajecia6;
 
 var builder = WebApplication.CreateBuilder(args);
