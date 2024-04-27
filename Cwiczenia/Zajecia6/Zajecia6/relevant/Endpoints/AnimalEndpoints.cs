@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-
+using FluentValidation;
 
 namespace Zajecia6;
 public static class AnimalEndpoints
@@ -41,7 +41,7 @@ public static class AnimalEndpoints
 					animals.Add(new GetAllAnimalsResponse(
 						readerS.GetInt32(0),
 						readerS.GetString(1),
-						readerS.GetString(2),
+						readerS.IsDBNull(2) ? null : readerS.GetString(2),
 						readerS.GetString(3),
 						readerS.GetString(4))
 					);
@@ -49,7 +49,6 @@ public static class AnimalEndpoints
 				readerS.Close();
 				selectAllQuery.Connection.Close();
 			}
-
 			return Results.Ok(animals);
 		});
 		app.MapGet("/api/animals-m/{id:int}", (IConfiguration config, int id) =>
@@ -64,7 +63,7 @@ public static class AnimalEndpoints
 				var readerS = selectAllQuery.ExecuteReader();
 				if (!readerS.Read()) return Results.NotFound("Animal with this index does not exist!");
 				animal = new GetSingleAnimalResponse(
-				readerS.GetInt32(0), readerS.GetString(1), readerS.GetString(2), readerS.GetString(3), readerS.GetString(4));
+				readerS.GetInt32(0), readerS.GetString(1), readerS.IsDBNull(2) ? null : readerS.GetString(2), readerS.GetString(3), readerS.GetString(4));
 
 				readerS.Close();
 				selectAllQuery.Connection.Close();
@@ -72,19 +71,22 @@ public static class AnimalEndpoints
 
 			return Results.Ok(animal);
 		});
-		app.MapPost("/api/animals-m", (IConfiguration config, string json) =>
+		app.MapPost("/api/animals-m", (IConfiguration config, IValidator<CreateAnimalRequest> validator, string json) =>
 		{
 			if (json.IsNullOrEmpty()) return Results.BadRequest("You must provide data");
 			if (!CheckIsJson(json)) return Results.BadRequest("Data must be formatted as JSON");
 
-			CreateAnimalRequest animal = null;
+			CreateAnimalRequest animal;
 			try
 			{
 				animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
+				if(animal == null) return Results.BadRequest("You must provide data");
+				var validation =validator.Validate(animal);
+				if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
 			}
 			catch (Newtonsoft.Json.JsonException)
 			{
-				return Results.BadRequest("Failed to parse JSON into CreateAnimalRequest object.");
+				return Results.BadRequest("Pass correct data!");
 			}
 
 			string connectionString = config.GetConnectionString("Default");
@@ -96,53 +98,9 @@ public static class AnimalEndpoints
 			using (var connection = new SqlConnection(config.GetConnectionString("Default")))
 			{
 				connection.Open();
-				using (var command = new SqlCommand(
-						"INSERT INTO Animal (Name, Description, Category, Area) VALUES (@Name, @Description, @Category, @Area);", connection))
-				{
-					command.Parameters.AddWithValue("@Name", animal.Name);
-					command.Parameters.AddWithValue("@Description", animal.Description);
-					command.Parameters.AddWithValue("@Category", animal.Category);
-					command.Parameters.AddWithValue("@Area", animal.Area);
-
-					command.ExecuteNonQuery();
-				}
-			}
-			return Results.Ok();
-		});
-		app.MapPut("/api/animals-m/{id:int}", (IConfiguration config, int id, string json) =>
-		{
-			if (json.IsNullOrEmpty()) return Results.BadRequest("You must provide data");
-			if (!CheckIsJson(json)) return Results.BadRequest("Data must be formatted as JSON");
-
-			EditAnimalRequest animal = null;
-			try
-			{
-				animal = JsonConvert.DeserializeObject<EditAnimalRequest>(json);
-			}
-			catch (Newtonsoft.Json.JsonException)
-			{
-				return Results.BadRequest("Failed to parse JSON into EditAnimalRequest object.");
-			}
-
-			using (var connection = new SqlConnection(config.GetConnectionString("Default")))
-			{
-				connection.Open();
-				int affected = -1;
-				using (var command = new SqlCommand(
-						"UPDATE Animal SET Name = @Name, Description = @Description, Category = @Category, Area = @Area WHERE IdAnimal = @Id;", connection))
-				{
-					command.Parameters.AddWithValue("@Id", id);
-					command.Parameters.AddWithValue("@Name", animal.Name);
-					command.Parameters.AddWithValue("@Description", animal.Description);
-					command.Parameters.AddWithValue("@Category", animal.Category);
-					command.Parameters.AddWithValue("@Area", animal.Area);
-
-					affected = command.ExecuteNonQuery();
-				}
-				if (affected == 0)
-				{
+				if (animal.Description != null)
 					using (var command = new SqlCommand(
-						"INSERT INTO Animal (Name, Description, Category, Area) VALUES (@Name, @Description, @Category, @Area);", connection))
+							"INSERT INTO Animal (Name, Description, Category, Area) VALUES (@Name, @Description, @Category, @Area);", connection))
 					{
 						command.Parameters.AddWithValue("@Name", animal.Name);
 						command.Parameters.AddWithValue("@Description", animal.Description);
@@ -151,9 +109,95 @@ public static class AnimalEndpoints
 
 						command.ExecuteNonQuery();
 					}
-				}
+				else
+					using (var command = new SqlCommand(
+							"INSERT INTO Animal (Name, Category, Area) VALUES (@Name, @Category, @Area);", connection))
+					{
+						command.Parameters.AddWithValue("@Name", animal.Name);
+						command.Parameters.AddWithValue("@Category", animal.Category);
+						command.Parameters.AddWithValue("@Area", animal.Area);
+
+						command.ExecuteNonQuery();
+					}
 			}
 			return Results.Ok();
+		});
+		app.MapPut("/api/animals-m/{id:int}", (IConfiguration config, IValidator<CreateAnimalRequest> validator, int id, string json) =>
+		{
+			if (json.IsNullOrEmpty()) return Results.BadRequest("You must provide data");
+			if (!CheckIsJson(json)) return Results.BadRequest("Data must be formatted as JSON");
+
+			CreateAnimalRequest animal;
+			try
+			{
+				animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
+				if(animal == null) return Results.BadRequest("You must provide data");
+				var validation =validator.Validate(animal);
+				if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
+			}
+			catch (JsonException)
+			{
+				return Results.BadRequest("Pass correct data!");
+			}
+
+			using (var connection = new SqlConnection(config.GetConnectionString("Default")))
+			{
+				connection.Open();
+				int affected = -1;
+				if (animal.Description != null)
+				{
+					using (var command = new SqlCommand(
+							"UPDATE Animal SET Name = @Name, Description = @Description, Category = @Category, Area = @Area WHERE IdAnimal = @Id;", connection))
+					{
+						command.Parameters.AddWithValue("@Id", id);
+						command.Parameters.AddWithValue("@Name", animal.Name);
+						command.Parameters.AddWithValue("@Description", animal.Description);
+						command.Parameters.AddWithValue("@Category", animal.Category);
+						command.Parameters.AddWithValue("@Area", animal.Area);
+
+						affected = command.ExecuteNonQuery();
+					}
+					if (affected == 0)
+					{
+						using (var command = new SqlCommand(
+							"INSERT INTO Animal (Name, Description, Category, Area) VALUES (@Name, @Description, @Category, @Area);", connection))
+						{
+							command.Parameters.AddWithValue("@Name", animal.Name);
+							command.Parameters.AddWithValue("@Description", animal.Description);
+							command.Parameters.AddWithValue("@Category", animal.Category);
+							command.Parameters.AddWithValue("@Area", animal.Area);
+
+							command.ExecuteNonQuery();
+						}
+					}
+				}
+				else
+				{
+					using (var command = new SqlCommand(
+						"UPDATE Animal SET Name = @Name, Category = @Category, Area = @Area WHERE IdAnimal = @Id;", connection))
+					{
+						command.Parameters.AddWithValue("@Id", id);
+						command.Parameters.AddWithValue("@Name", animal.Name);
+						command.Parameters.AddWithValue("@Category", animal.Category);
+						command.Parameters.AddWithValue("@Area", animal.Area);
+
+						affected = command.ExecuteNonQuery();
+					}
+					if (affected == 0)
+					{
+						using (var command = new SqlCommand(
+							"INSERT INTO Animal (Name, Category, Area) VALUES (@Name, @Category, @Area);", connection))
+						{
+							command.Parameters.AddWithValue("@Name", animal.Name);
+							command.Parameters.AddWithValue("@Category", animal.Category);
+							command.Parameters.AddWithValue("@Area", animal.Area);
+
+							command.ExecuteNonQuery();
+						}
+					}
+				}
+				return Results.Ok();
+			}
 		});
 		app.MapDelete("/api/animals-m/{id:int}", (IConfiguration config, int id) =>
 		{
