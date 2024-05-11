@@ -28,10 +28,7 @@ public static class AnimalEndpoints
 					readerC.Close();
 					getColumnNames.Connection.Close();
 				}
-				else
-				{
-					query += $" ORDER BY name ASC";
-				}
+				else query += $" ORDER BY name ASC";
 
 				var selectAllQuery = new SqlCommand(query, sqlConnection);
 				selectAllQuery.Connection.Open();
@@ -80,8 +77,8 @@ public static class AnimalEndpoints
 			try
 			{
 				animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
-				if(animal == null) return Results.BadRequest("You must provide data");
-				var validation =validator.Validate(animal);
+				if (animal == null) return Results.BadRequest("You must provide data");
+				var validation = validator.Validate(animal);
 				if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
 			}
 			catch (Newtonsoft.Json.JsonException)
@@ -131,8 +128,8 @@ public static class AnimalEndpoints
 			try
 			{
 				animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
-				if(animal == null) return Results.BadRequest("You must provide data");
-				var validation =validator.Validate(animal);
+				if (animal == null) return Results.BadRequest("You must provide data");
+				var validation = validator.Validate(animal);
 				if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
 			}
 			catch (JsonException)
