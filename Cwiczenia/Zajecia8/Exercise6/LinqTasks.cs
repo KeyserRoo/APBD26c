@@ -352,8 +352,8 @@ public static class LinqTasks
 	/// </summary>
 	public static IEnumerable<Emp> Task12()
 	{
-		IEnumerable<Emp> result = null;
-		return result;
+		IEnumerable<Emp> result = [];
+		return result.Task12Method();
 	}
 
 	/// <summary>
@@ -365,8 +365,12 @@ public static class LinqTasks
 	/// </summary>
 	public static int Task13(int[] arr)
 	{
-		int result = 0;
-		//result=
+		int result =
+				arr.GroupBy(e => e)
+				.Where(e => e.Count() % 2 == 1)
+				.Select(e => e.Key)
+				.First();
+
 		return result;
 	}
 
@@ -376,8 +380,24 @@ public static class LinqTasks
 	/// </summary>
 	public static IEnumerable<Dept> Task14()
 	{
-		IEnumerable<Dept> result = null;
-		//result =
+		IEnumerable<Dept> result =
+		Depts.GroupJoin(Emps,
+		dept => dept.Deptno,
+		emp => emp.Deptno,
+		(dept, emps) => new
+		{
+			dept.Deptno,
+			dept.Dname,
+			dept.Loc,
+			EmpsCount = emps.Count()
+		})
+		.Where(e => e.EmpsCount == 5 || e.EmpsCount == 0)
+		.Select(e => new Dept
+		{
+			Deptno = e.Deptno,
+			Dname = e.Dname,
+			Loc = e.Loc
+		});
 		return result;
 	}
 }
@@ -386,12 +406,9 @@ public static class CustomExtensionMethods
 {
 	public static IEnumerable<Emp> Task12Method(this IEnumerable<Emp> emps)
 	{
-		 return emps
-           .Where(e => emps.Any(emp => emp.Mgr?.Empno == e.Empno))
-           .OrderBy(e => e.Ename)
-           .ThenByDescending(e => e.Salary);
+		return emps
+					.Where(e => emps.Any(emp => emp.Mgr?.Empno == e.Empno))
+					.OrderBy(e => e.Ename)
+					.ThenByDescending(e => e.Salary);
 	}
 }
-
-	/// Metoda powinna zwrócić tylko tych pracowników, którzy mają min. 1 bezpośredniego podwładnego.
-	/// Pracownicy powinny w ramach kolekcji być posortowani po nazwisku (rosnąco) i pensji (malejąco).
