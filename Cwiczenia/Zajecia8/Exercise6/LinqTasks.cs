@@ -323,8 +323,6 @@ public static class LinqTasks
 	public static IEnumerable<object> Task11()
 	{
 
-		IEnumerable<object> result = null;
-
 		/*
 		SELECT dep.name, count(emp.Empno)
 		FROM Emps emp
@@ -333,12 +331,13 @@ public static class LinqTasks
 		HAVING count(emp.Empno) > 1
 		*/
 
-		// Emps.GroupBy(e => e.Job).Join(Depts, emp => emp.Deptno, dept => dept.Deptno, (emp, dept) => new
-		// {
-		// 	name = dept.Dname,
-		// 	numOfEmployees =
-		// });
-
+		IEnumerable<object> result =
+		Depts.GroupJoin(Emps, dept => dept.Deptno, emp => emp.Deptno, (dept, emps) => new
+		{
+			Name = dept.Dname,
+			numOfEmployees = emps.Count()
+		})
+		.Where(e => e.numOfEmployees > 1);
 
 		return result;
 	}
