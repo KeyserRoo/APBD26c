@@ -47,4 +47,6 @@ public class Product
 	public decimal ProductWidth { get; set; }
 	public decimal ProductHeight { get; set; }
 	public decimal ProductDepth { get; set; }
+	public IEnumerable<ProductCategory> ProductCategories { get; set; }
+    public IEnumerable<ShoppingCart> ShoppingCarts { get; set; }
 }

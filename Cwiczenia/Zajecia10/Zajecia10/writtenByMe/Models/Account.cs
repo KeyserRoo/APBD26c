@@ -49,8 +49,10 @@ public class Account
 {
 	public int AccountId { get; set; }
 	public int AccountRole { get; set; }
+	public Role Role { get; set; }
 	public string AccountFirstName { get; set; }
 	public string AccountLastName { get; set; }
 	public string AccountEmail { get; set; }
 	public string AccountPhoneNumber { get; set; }
+	public IEnumerable<ShoppingCart> ShoppingCarts { get; set; }
 }
