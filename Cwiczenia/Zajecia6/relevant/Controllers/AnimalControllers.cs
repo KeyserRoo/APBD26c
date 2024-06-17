@@ -88,15 +88,15 @@ public class AnimalControllers : ControllerBase
 		return Ok(animal);
 	}
 	[HttpPost]
-	public IActionResult CreateAnimal(string json)
+	public IActionResult CreateAnimal(CreateAnimalRequest animal)
 	{
-		if (json.IsNullOrEmpty()) return BadRequest("You must provide data");
-		if (!CheckIsJson(json)) return BadRequest("Data must be formatted as JSON");
+		// if (json.IsNullOrEmpty()) return BadRequest("You must provide data");
+		// if (!CheckIsJson(json)) return BadRequest("Data must be formatted as JSON");
 
-		CreateAnimalRequest animal;
+		// CreateAnimalRequest animal;
 		try
 		{
-			animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
+			// animal = JsonConvert.DeserializeObject<CreateAnimalRequest>(json);
 
 			if (animal == null) return BadRequest("You must provide data");
 			var validation = _createAnimalValidator.Validate(animal);
